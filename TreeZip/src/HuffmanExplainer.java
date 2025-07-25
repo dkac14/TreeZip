@@ -1,11 +1,21 @@
-import java.util.Map;
+import java.util.*;
 
 public class HuffmanExplainer {
-    public String explain(String input, Map<Character, String> codes, String encoded) {
-        StringBuilder sb = new StringBuilder("Hola humano. Vamos a comprimir tu texto:\n\n");
-        sb.append("Frecuencia de códigos:\n");
-        codes.forEach((ch, code) -> sb.append("  '").append(ch).append("' → ").append(code).append("\n"));
-        sb.append("\nTexto codificado: ").append(encoded);
-        return sb.toString();
+    public void explain(List<String> steps, long delayMs) throws InterruptedException {
+        for (String line : steps) {
+            System.out.println(line);
+            Thread.sleep(delayMs);
+        }
+    }
+
+    public void explainTree(Node node, String prefix, boolean isLeft, long delayMs) throws InterruptedException {
+        if (node != null) {
+            System.out.println(prefix + (isLeft ? "├── " : "└── ") +
+                    (node.character == '\0' ? "◼" : "'" + node.character + "'") + " (" + node.frequency + ", nodo "
+                    + node.id + ")");
+            Thread.sleep(delayMs);
+            explainTree(node.left, prefix + (isLeft ? "│   " : "    "), true, delayMs);
+            explainTree(node.right, prefix + (isLeft ? "│   " : "    "), false, delayMs);
+        }
     }
 }

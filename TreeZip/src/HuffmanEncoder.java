@@ -11,7 +11,7 @@ public class HuffmanEncoder {
             freqMap.put(c, freqMap.getOrDefault(c, 0) + 1);
         }
 
-        steps.add("Frecuencias de caracteres:");
+        steps.add("Paso 1: Frecuencias de caracteres:");
         for (var entry : freqMap.entrySet()) {
             steps.add("  '" + entry.getKey() + "' : " + entry.getValue());
         }
@@ -21,7 +21,7 @@ public class HuffmanEncoder {
             queue.add(new Node(entry.getKey(), entry.getValue()));
         }
 
-        steps.add("\nConstrucción del árbol de Huffman:");
+        steps.add("\nPaso 2: Construcción del árbol de Huffman:");
         int step = 1;
         while (queue.size() > 1) {
             Node left = queue.poll();
@@ -31,23 +31,48 @@ public class HuffmanEncoder {
             parent.right = right;
 
             queue.add(parent);
-            steps.add("Paso " + step++ + ": combinamos '" + 
-                (left.character == '\0' ? "◼" : left.character) + "' (" + left.frequency + 
-                ") + '" + (right.character == '\0' ? "◼" : right.character) + "' (" + right.frequency + 
-                ") → nuevo nodo (" + parent.frequency + ")");
+            steps.add("Paso " + step++ + ": combinamos '" +
+                    (left.character == '\0' ? "◼" : left.character) + "' (" + left.frequency +
+                    ") + '" + (right.character == '\0' ? "◼" : right.character) + "' (" + right.frequency +
+                    ") → nuevo nodo (" + parent.frequency + ", nodo " + parent.id + ")");
         }
 
         root = queue.poll();
-        buildCodes(root, "");
+        steps.add("\nPaso 3: Generación de códigos binarios:");
+        buildCodes(root, "", root.id);
     }
 
-    private void buildCodes(Node node, String code) {
-        if (node == null) return;
+    private void buildCodes(Node node, String code, int nodoId) {
+        if (node == null)
+            return;
+
         if (node.isLeaf()) {
             codes.put(node.character, code);
+            steps.add("  -> Nodo hoja: '" + node.character + "' = código: " + code);
+        } else {
+            if (node.left != null) {
+                steps.add("  Descendemos por la izquierda por el nodo " + node.id + " agregamos '0' a "
+                        + leftMostChar(node.left));
+                buildCodes(node.left, code + "0", node.left.id);
+            }
+            if (node.right != null) {
+                steps.add("  Descendemos por la derecha por el nodo " + node.id + " agregamos '1' a "
+                        + rightMostChar(node.right));
+                buildCodes(node.right, code + "1", node.right.id);
+            }
         }
-        buildCodes(node.left, code + "0");
-        buildCodes(node.right, code + "1");
+    }
+
+    private String leftMostChar(Node node) {
+        while (node != null && !node.isLeaf())
+            node = node.left;
+        return node != null ? ("'" + node.character + "'") : "◼";
+    }
+
+    private String rightMostChar(Node node) {
+        while (node != null && !node.isLeaf())
+            node = node.right;
+        return node != null ? ("'" + node.character + "'") : "◼";
     }
 
     public String encode(String text) {
@@ -58,25 +83,15 @@ public class HuffmanEncoder {
         return sb.toString();
     }
 
-    public String explain(String input) {
-        StringBuilder sb = new StringBuilder("Hola, soy TreeZip. Vamos a codificar tu texto paso a paso:\n\n");
-
-        for (String s : steps) {
-            sb.append(s).append("\n");
-        }
-
-        sb.append("\nTabla de códigos:\n");
-        for (Map.Entry<Character, String> entry : codes.entrySet()) {
-            sb.append("  '").append(entry.getKey()).append("' → ").append(entry.getValue()).append("\n");
-        }
-
-        sb.append("\nTexto original: ").append(input).append("\n");
-        sb.append("Codificado: ").append(encode(input));
-
-        return sb.toString();
+    public Node getRoot() {
+        return root;
     }
 
     public Map<Character, String> getCodes() {
         return codes;
+    }
+
+    public List<String> getSteps() {
+        return steps;
     }
 }
