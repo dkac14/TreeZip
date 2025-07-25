@@ -1,47 +1,23 @@
-import java.io.IOException;
+import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        // 1. Texto de entrada
-        String input = "este es un ejemplo del algoritmo de huffman";
-
-        // 2. Instanciar el codificador de Huffman
+        Scanner scanner = new Scanner(System.in);
         HuffmanEncoder encoder = new HuffmanEncoder();
+        FileExporter exporter = new FileExporter();
 
-        // 3. Construir el árbol y generar los códigos
-        encoder.buildHuffmanTree(input);
+        System.out.print("Ingrese un texto: ");
+        String input = scanner.nextLine();
 
-        // 4. Codificar el texto
-        String encodedText = encoder.encode(input);
+        encoder.build(input);
 
-        // 5. Mostrar la explicación tipo IA
-        System.out.println("🧠 Explicación paso a paso del algoritmo de Huffman:\n");
-        System.out.println(encoder.getExplanation());
+        // Mostrar explicación detallada paso a paso
+        String explanation = encoder.explain(input);
+        System.out.println("\n--- PROCESO DE HUFFMAN ---\n");
+        System.out.println(explanation);
 
-        // 6. Mostrar el texto codificado
-        System.out.println("\n🔐 Texto codificado:\n" + encodedText);
-
-        // 7. Mostrar el árbol de Huffman en consola
-        System.out.println("\n🌳 Árbol de Huffman:");
-        printTree(encoder.getRoot(), "", false);
-
-        // 8. Guardar resultado en un archivo
-        try {
-            String filePath = "resultado_huffman.txt";
-            encoder.saveToFile(encodedText, filePath);
-            System.out.println("\n✅ Archivo guardado en: " + filePath);
-        } catch (IOException e) {
-            System.err.println("❌ Error al guardar el archivo: " + e.getMessage());
-        }
-    }
-
-    // Método auxiliar para imprimir el árbol
-    public static void printTree(HuffmanNode node, String indent, boolean isLeft) {
-        if (node != null) {
-            System.out.println(indent + (isLeft ? "├── " : "└── ") +
-                    (node.character == '\0' ? "*" : "'" + node.character + "'") + " (" + node.frequency + ")");
-            printTree(node.left, indent + (isLeft ? "│   " : "    "), true);
-            printTree(node.right, indent + (isLeft ? "│   " : "    "), false);
-        }
+        // Guardar solo el texto codificado
+        String encoded = encoder.encode(input);
+        exporter.save(encoded, "resultado_codificado.txt");
     }
 }

@@ -1,83 +1,82 @@
 import java.util.*;
-import java.io.*;
 
 public class HuffmanEncoder {
-    private Map<Character, String> huffmanCodes = new HashMap<>();
-    private StringBuilder explanation = new StringBuilder();
-    private HuffmanNode root;
+    private Map<Character, String> codes = new HashMap<>();
+    private Node root;
+    private List<String> steps = new ArrayList<>();
 
-    public void buildHuffmanTree(String text) {
+    public void build(String text) {
         Map<Character, Integer> freqMap = new HashMap<>();
-
         for (char c : text.toCharArray()) {
             freqMap.put(c, freqMap.getOrDefault(c, 0) + 1);
         }
 
-        explanation.append("Paso 1: Conteo de frecuencias\n");
-        for (Map.Entry<Character, Integer> entry : freqMap.entrySet()) {
-            explanation.append(" - '" + entry.getKey() + "' → " + entry.getValue() + "\n");
+        steps.add("Frecuencias de caracteres:");
+        for (var entry : freqMap.entrySet()) {
+            steps.add("  '" + entry.getKey() + "' : " + entry.getValue());
         }
 
-        PriorityQueue<HuffmanNode> pq = new PriorityQueue<>(Comparator.comparingInt(a -> a.frequency));
-        for (Map.Entry<Character, Integer> entry : freqMap.entrySet()) {
-            pq.offer(new HuffmanNode(entry.getKey(), entry.getValue()));
+        PriorityQueue<Node> queue = new PriorityQueue<>(Comparator.comparingInt(n -> n.frequency));
+        for (var entry : freqMap.entrySet()) {
+            queue.add(new Node(entry.getKey(), entry.getValue()));
         }
 
-        explanation.append("\nPaso 2: Construcción del árbol de Huffman\n");
-        while (pq.size() > 1) {
-            HuffmanNode left = pq.poll();
-            HuffmanNode right = pq.poll();
-
-            HuffmanNode parent = new HuffmanNode('\0', left.frequency + right.frequency);
+        steps.add("\nConstrucción del árbol de Huffman:");
+        int step = 1;
+        while (queue.size() > 1) {
+            Node left = queue.poll();
+            Node right = queue.poll();
+            Node parent = new Node('\0', left.frequency + right.frequency);
             parent.left = left;
             parent.right = right;
 
-            pq.offer(parent);
-            explanation.append(" - Nodo combinado con frecuencia " + parent.frequency + " ("
-                    + left.frequency + " + " + right.frequency + ")\n");
+            queue.add(parent);
+            steps.add("Paso " + step++ + ": combinamos '" + 
+                (left.character == '\0' ? "◼" : left.character) + "' (" + left.frequency + 
+                ") + '" + (right.character == '\0' ? "◼" : right.character) + "' (" + right.frequency + 
+                ") → nuevo nodo (" + parent.frequency + ")");
         }
 
-        root = pq.poll();
-        explanation.append("\nPaso 3: Generación de códigos de Huffman\n");
-        generateCodes(root, "");
+        root = queue.poll();
+        buildCodes(root, "");
     }
 
-    private void generateCodes(HuffmanNode node, String code) {
+    private void buildCodes(Node node, String code) {
         if (node == null) return;
-
-        if (node.left == null && node.right == null) {
-            huffmanCodes.put(node.character, code);
-            explanation.append(" - '" + node.character + "' → " + code + "\n");
+        if (node.isLeaf()) {
+            codes.put(node.character, code);
         }
-
-        generateCodes(node.left, code + "0");
-        generateCodes(node.right, code + "1");
+        buildCodes(node.left, code + "0");
+        buildCodes(node.right, code + "1");
     }
 
     public String encode(String text) {
-        StringBuilder encoded = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
         for (char c : text.toCharArray()) {
-            encoded.append(huffmanCodes.get(c));
+            sb.append(codes.get(c));
         }
-        return encoded.toString();
+        return sb.toString();
     }
 
-    public String getExplanation() {
-        return explanation.toString();
-    }
+    public String explain(String input) {
+        StringBuilder sb = new StringBuilder("Hola, soy TreeZip. Vamos a codificar tu texto paso a paso:\n\n");
 
-    public HuffmanNode getRoot() {
-        return root;
+        for (String s : steps) {
+            sb.append(s).append("\n");
+        }
+
+        sb.append("\nTabla de códigos:\n");
+        for (Map.Entry<Character, String> entry : codes.entrySet()) {
+            sb.append("  '").append(entry.getKey()).append("' → ").append(entry.getValue()).append("\n");
+        }
+
+        sb.append("\nTexto original: ").append(input).append("\n");
+        sb.append("Codificado: ").append(encode(input));
+
+        return sb.toString();
     }
 
     public Map<Character, String> getCodes() {
-        return huffmanCodes;
+        return codes;
     }
-
-      public void saveToFile(String encodedText, String filePath) throws IOException {
-    FileWriter writer = new FileWriter(filePath);
-    writer.write(encodedText);
-    writer.close();
 }
-}
-
