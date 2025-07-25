@@ -1,47 +1,43 @@
-import java.io.IOException;
-
 public class Main {
-    public static void main(String[] args) {
-        // 1. Texto de entrada
-        String input = "este es un ejemplo del algoritmo de huffman";
-
-        // 2. Instanciar el codificador de Huffman
+    public static void main(String[] args) throws Exception {
+        String texto = "amor uwu";
         HuffmanEncoder encoder = new HuffmanEncoder();
+        encoder.build(texto);
 
-        // 3. Construir el árbol y generar los códigos
-        encoder.buildHuffmanTree(input);
+        String codificado = encoder.encode(texto);
 
-        // 4. Codificar el texto
-        String encodedText = encoder.encode(input);
+        // Mostrar explicación paso a paso
+        System.out.println("📖 Proceso detallado:\n");
+        PasoAPasoExplicador.mostrar(encoder.getExplanation(), 250);
 
-        // 5. Mostrar la explicación tipo IA
-        System.out.println("🧠 Explicación paso a paso del algoritmo de Huffman:\n");
-        System.out.println(encoder.getExplanation());
+        // Mostrar árbol
+        System.out.println("\n🌳 Árbol de Huffman (visual):\n");
+        HuffmanPrinter.printTree(encoder.getRoot(), "", false);
 
-        // 6. Mostrar el texto codificado
-        System.out.println("\n🔐 Texto codificado:\n" + encodedText);
-
-        // 7. Mostrar el árbol de Huffman en consola
-        System.out.println("\n🌳 Árbol de Huffman:");
-        printTree(encoder.getRoot(), "", false);
-
-        // 8. Guardar resultado en un archivo
-        try {
-            String filePath = "resultado_huffman.txt";
-            encoder.saveToFile(encodedText, filePath);
-            System.out.println("\n✅ Archivo guardado en: " + filePath);
-        } catch (IOException e) {
-            System.err.println("❌ Error al guardar el archivo: " + e.getMessage());
+        // Mostrar códigos
+        System.out.println("\n📘 Tabla de códigos generados:\n");
+        for (var entry : encoder.getCodes().entrySet()) {
+            System.out.println(" - '" + entry.getKey() + "' → " + entry.getValue());
         }
-    }
 
-    // Método auxiliar para imprimir el árbol
-    public static void printTree(HuffmanNode node, String indent, boolean isLeft) {
-        if (node != null) {
-            System.out.println(indent + (isLeft ? "├── " : "└── ") +
-                    (node.character == '\0' ? "*" : "'" + node.character + "'") + " (" + node.frequency + ")");
-            printTree(node.left, indent + (isLeft ? "│   " : "    "), true);
-            printTree(node.right, indent + (isLeft ? "│   " : "    "), false);
-        }
+        // Mostrar resultados de codificación
+        int originalBits = texto.length() * 8;
+        int codificadoBits = codificado.length();
+
+        System.out.println("\n📊 Comparación de tamaños:");
+        System.out.println(" - Tamaño original: " + texto.length() + " caracteres × 8 bits = " + originalBits + " bits");
+        System.out.println(" - Tamaño codificado: " + codificado.length() + " bits");
+
+        int ahorro = originalBits - codificadoBits;
+        double porcentaje = (ahorro * 100.0) / originalBits;
+
+        System.out.printf(" - Ahorro: %d bits (%.2f%%)\n", ahorro, porcentaje);
+
+        // Justificación
+        System.out.println("\n🧠 Justificación:");
+        System.out.println("Huffman logra compresión porque asigna códigos más cortos a los caracteres más frecuentes.");
+        System.out.println("En este caso, los caracteres 'u' y 'o', que se repiten, tienen códigos más cortos.");
+        System.out.println("Los caracteres raros (como 'a' o 'w') reciben códigos más largos.");
+        System.out.println("Eso reduce el tamaño total del texto codificado.");
     }
 }

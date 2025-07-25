@@ -1,10 +1,7 @@
-import java.io.FileWriter;
-import java.io.IOException;
-
 public class HuffmanNode {
-    char character;
-    int frequency;
-    HuffmanNode left, right;
+    public char character;
+    public int frequency;
+    public HuffmanNode left, right;
 
     public HuffmanNode(char character, int frequency) {
         this.character = character;
@@ -12,4 +9,7 @@ public class HuffmanNode {
         this.left = this.right = null;
     }
 
+    public boolean isLeaf() {
+        return left == null && right == null;
+    }
 }
